@@ -213,6 +213,12 @@
             trackEvent('vehicle_view', {
                 event_category: 'automotive',
                 event_action: 'view_vehicle',
+                product_id: [vehicle.id],
+                product_name: [vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model],
+                product_category: ['vehicle'],
+                product_brand: [vehicle.make],
+                product_unit_price: [vehicle.price],
+                product_quantity: [1],
                 vehicle_id: vehicle.id,
                 vehicle_make: vehicle.make,
                 vehicle_model: vehicle.model,

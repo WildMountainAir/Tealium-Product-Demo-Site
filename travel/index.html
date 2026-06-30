@@ -224,13 +224,19 @@
             trackEvent('flight_select', {
                 event_category: 'travel',
                 event_action: 'select_flight',
+                product_id: [flightId],
+                product_name: [flight.airline + ' ' + flightId],
+                product_category: ['flight'],
+                product_unit_price: [pricePerPerson],
+                product_quantity: [searchParams.passengers],
                 flight_id: flightId,
                 airline: flight.airline,
                 origin: flight.origin,
                 destination: flight.destination,
                 cabin_class: searchParams.cabin_class,
                 passengers: searchParams.passengers,
-                price: pricePerPerson * searchParams.passengers
+                order_subtotal: pricePerPerson * searchParams.passengers,
+                order_currency: 'USD'
             });
 
             window.location.href = 'travelers.html';

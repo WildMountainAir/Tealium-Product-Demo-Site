@@ -174,10 +174,10 @@
                 product_name: productNames,
                 product_category: productCategories,
                 product_brand: productBrands,
-                product_price: productPrices,
+                product_unit_price: productPrices,
                 product_quantity: productQuantities,
-                cart_total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-                currency: 'USD'
+                order_subtotal: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                order_currency: 'USD'
             });
 
             window.location.href = 'shipping.html';

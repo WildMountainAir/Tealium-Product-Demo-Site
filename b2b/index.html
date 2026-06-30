@@ -82,6 +82,11 @@
             trackEvent('plan_select', {
                 event_category: 'b2b',
                 event_action: 'select_plan',
+                product_id: [planName],
+                product_name: [planName + ' Plan'],
+                product_category: ['subscription'],
+                product_unit_price: [price],
+                product_quantity: [1],
                 plan_name: planName,
                 plan_price: price
             });

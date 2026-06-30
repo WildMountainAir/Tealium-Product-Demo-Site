@@ -120,9 +120,11 @@
             trackEvent('product_view', {
                 event_category: 'financial',
                 event_action: 'view_credit_card',
-                product_id: card.id,
-                product_name: card.name,
-                product_category: card.category,
+                product_id: [card.id],
+                product_name: [card.name],
+                product_category: [card.category],
+                product_unit_price: [card.annual_fee],
+                product_quantity: [1],
                 annual_fee: card.annual_fee
             });
 

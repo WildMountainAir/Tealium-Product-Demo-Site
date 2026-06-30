@@ -104,6 +104,12 @@
             trackEvent('test_drive_confirmed', {
                 event_category: 'automotive',
                 event_action: 'confirm_test_drive',
+                product_id: [vehicle.id],
+                product_name: [vehicle.year + ' ' + vehicle.make + ' ' + vehicle.model],
+                product_category: ['vehicle'],
+                product_brand: [vehicle.make],
+                product_unit_price: [vehicle.price],
+                product_quantity: [1],
                 test_drive_id: testDriveId,
                 vehicle_id: vehicle.id,
                 vehicle_make: vehicle.make,

@@ -186,11 +186,16 @@
             trackEvent('purchase', {
                 event_category: 'travel',
                 event_action: 'purchase',
-                booking_reference: bookingRef,
-                booking_total: total,
-                flight_total: subtotal,
-                taxes_fees: taxes + fees,
-                currency: 'USD',
+                order_id: bookingRef,
+                order_total: total,
+                order_subtotal: subtotal,
+                order_tax: taxes + fees,
+                order_currency: 'USD',
+                product_id: [selectedFlight.id],
+                product_name: [selectedFlight.airline + ' ' + selectedFlight.id],
+                product_category: ['flight'],
+                product_unit_price: [selectedFlight.price_per_person],
+                product_quantity: [searchParams.passengers],
                 flight_id: selectedFlight.id,
                 airline: selectedFlight.airline,
                 origin: selectedFlight.origin,
@@ -199,8 +204,8 @@
                 return_date: searchParams.return_date,
                 passengers: searchParams.passengers,
                 cabin_class: searchParams.cabin_class,
-                contact_email: travelersInfo.contact_email,
-                payment_method: 'credit_card'
+                customer_email: travelersInfo.contact_email,
+                order_payment_type: 'credit_card'
             });
 
             setTimeout(() => {
