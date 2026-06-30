@@ -182,6 +182,13 @@
 
             Storage.set('travel_booking_ref', bookingRef);
 
+            // Generate or retrieve customer ID
+            let customerId = Storage.get('customer_id');
+            if (!customerId) {
+                customerId = generateId('CUST');
+                Storage.set('customer_id', customerId);
+            }
+
             // Track purchase
             trackEvent('purchase', {
                 event_category: 'travel',
@@ -191,11 +198,13 @@
                 order_subtotal: subtotal,
                 order_tax: taxes + fees,
                 order_currency: 'USD',
+                customer_id: customerId,
                 product_id: [selectedFlight.id],
                 product_name: [selectedFlight.airline + ' ' + selectedFlight.id],
                 product_category: ['flight'],
                 product_unit_price: [selectedFlight.price_per_person],
                 product_quantity: [searchParams.passengers],
+                product_on_page: [1],
                 flight_id: selectedFlight.id,
                 airline: selectedFlight.airline,
                 origin: selectedFlight.origin,

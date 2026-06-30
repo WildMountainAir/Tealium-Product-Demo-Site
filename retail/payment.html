@@ -221,6 +221,14 @@
             const productBrands = cart.map(item => item.brand);
             const productPrices = cart.map(item => item.price);
             const productQuantities = cart.map(item => item.quantity);
+            const productOnPage = cart.map((item, index) => index + 1);
+
+            // Generate or retrieve customer ID
+            let customerId = Storage.get('customer_id');
+            if (!customerId) {
+                customerId = generateId('CUST');
+                Storage.set('customer_id', customerId);
+            }
 
             trackEvent('purchase', {
                 event_category: 'ecommerce',
@@ -231,12 +239,14 @@
                 order_tax: tax,
                 order_shipping: shipping,
                 order_currency: 'USD',
+                customer_id: customerId,
                 product_id: productIds,
                 product_name: productNames,
                 product_category: productCategories,
                 product_brand: productBrands,
                 product_unit_price: productPrices,
                 product_quantity: productQuantities,
+                product_on_page: productOnPage,
                 customer_email: shippingInfo.email,
                 customer_city: shippingInfo.city,
                 customer_state: shippingInfo.state,
