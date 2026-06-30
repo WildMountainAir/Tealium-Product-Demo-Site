@@ -9,6 +9,7 @@ function trackPageView(data) {
         ...window.utag_data,
         ...data,
         page_type: data.page_type || 'general',
+        tealium_event: 'page_view',
         timestamp: new Date().toISOString()
     };
 
@@ -22,14 +23,45 @@ function trackPageView(data) {
 
 // Helper to track events
 function trackEvent(eventName, data) {
+    // Map event names to tealium_event values
+    const eventMapping = {
+        'add_to_cart': 'cart_add',
+        'remove_from_cart': 'cart_remove',
+        'begin_checkout': 'checkout_start',
+        'checkout_progress': 'checkout_progress',
+        'add_payment_info': 'payment_info_add',
+        'purchase': 'purchase',
+        'flight_search': 'search',
+        'flight_select': 'product_select',
+        'add_travelers': 'form_submit',
+        'doctor_search': 'search',
+        'doctor_select': 'product_select',
+        'appointment_booked': 'appointment_book',
+        'product_view': 'product_view',
+        'loan_calculate': 'calculate',
+        'loan_apply_start': 'form_start',
+        'application_submit': 'form_submit',
+        'loan_application': 'application_submit',
+        'plan_select': 'product_select',
+        'signup_complete': 'signup_complete',
+        'demo_request': 'lead_submit',
+        'vehicle_search': 'search',
+        'vehicle_view': 'product_view',
+        'test_drive_request': 'lead_start',
+        'test_drive_confirmed': 'lead_submit',
+        'financing_request': 'lead_start',
+        'financing_application': 'application_submit'
+    };
+
     const eventData = {
         ...window.utag_data,
         ...data,
         event_name: eventName,
+        tealium_event: eventMapping[eventName] || eventName,
         timestamp: new Date().toISOString()
     };
 
-    console.log('🎯 Event:', eventName, eventData);
+    console.log('🎯 Event:', eventName, '→', eventData.tealium_event, eventData);
 
     // If Tealium is loaded, trigger link/event
     if (window.utag && window.utag.link) {
