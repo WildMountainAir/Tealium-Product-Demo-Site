@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Application - SecureBank</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="financial-info.html" class="btn btn-secondary">← Back to Financial Info</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>📋 Review & Submit</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Personal Info</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Financial Info</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">3</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Product Details</h2>
+            <div id="product-summary"></div>
+        </div>
+
+        <div class="card">
+            <h2>Personal Information</h2>
+            <div id="personal-summary"></div>
+        </div>
+
+        <div class="card">
+            <h2>Financial Information</h2>
+            <div id="financial-summary"></div>
+        </div>
+
+        <div class="card">
+            <h2>Terms & Conditions</h2>
+            <div class="form-group">
+                <label style="display: flex; align-items: flex-start;">
+                    <input type="checkbox" id="terms_accept" required style="width: auto; margin-right: 10px; margin-top: 3px;">
+                    <span>I have read and agree to the Terms and Conditions, Privacy Policy, and authorize SecureBank to obtain my credit report for this application.</span>
+                </label>
+            </div>
+            <div class="form-group">
+                <label style="display: flex; align-items: flex-start;">
+                    <input type="checkbox" id="esign_consent" required style="width: auto; margin-right: 10px; margin-top: 3px;">
+                    <span>I consent to receive documents and communications electronically.</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <strong>💡 Important:</strong> By submitting this application, you authorize us to verify your information and perform a credit check.
+        </div>
+
+        <div class="btn-group">
+            <a href="financial-info.html" class="btn btn-secondary">← Back to Financial Info</a>
+            <button class="btn btn-primary" onclick="submitApplication()">
+                Submit Application →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let product = {};
+        let personalInfo = {};
+        let financialInfo = {};
+
+        function displaySummary() {
+            product = Storage.get('financial_product') || {};
+            personalInfo = Storage.get('financial_personal_info') || {};
+            financialInfo = Storage.get('financial_financial_info') || {};
+
+            if (!product.type || !personalInfo.email || !financialInfo.annual_income) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Product summary
+            if (product.type === 'credit_card') {
+                document.getElementById('product-summary').innerHTML = `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                        <strong>Card:</strong> ${product.name}<br>
+                        <strong>Category:</strong> ${product.category}<br>
+                        <strong>Annual Fee:</strong> ${product.annual_fee === 0 ? 'No Fee' : formatCurrency(product.annual_fee)}<br>
+                        <strong>Rewards:</strong> ${product.rewards_rate}<br>
+                        <strong>APR:</strong> ${product.intro_apr}
+                    </div>
+                `;
+            } else if (product.type === 'loan') {
+                document.getElementById('product-summary').innerHTML = `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                        <strong>Loan Type:</strong> ${product.name}<br>
+                        <strong>Loan Amount:</strong> ${formatCurrency(product.amount)}<br>
+                        <strong>Term:</strong> ${product.term_years} years<br>
+                        <strong>APR:</strong> ${product.apr}%<br>
+                        <strong>Monthly Payment:</strong> ${formatCurrency(product.monthly_payment)}
+                    </div>
+                `;
+            }
+
+            // Personal summary
+            document.getElementById('personal-summary').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    <strong>Name:</strong> ${personalInfo.first_name} ${personalInfo.last_name}<br>
+                    <strong>DOB:</strong> ${personalInfo.dob}<br>
+                    <strong>Email:</strong> ${personalInfo.email}<br>
+                    <strong>Phone:</strong> ${personalInfo.phone}<br>
+                    <strong>Address:</strong> ${personalInfo.address}, ${personalInfo.city}, ${personalInfo.state} ${personalInfo.zip}<br>
+                    <strong>Citizenship:</strong> ${personalInfo.citizenship}
+                </div>
+            `;
+
+            // Financial summary
+            document.getElementById('financial-summary').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    <strong>Employer:</strong> ${financialInfo.employer_name}<br>
+                    <strong>Job Title:</strong> ${financialInfo.job_title}<br>
+                    <strong>Employment Status:</strong> ${financialInfo.employment_status}<br>
+                    <strong>Annual Income:</strong> ${formatCurrency(financialInfo.annual_income)}<br>
+                    <strong>Housing Status:</strong> ${financialInfo.housing_status}<br>
+                    <strong>Monthly Housing:</strong> ${formatCurrency(financialInfo.monthly_housing)}<br>
+                    <strong>Monthly Debt:</strong> ${formatCurrency(financialInfo.monthly_debt)}
+                </div>
+            `;
+        }
+
+        function submitApplication() {
+            const termsAccepted = document.getElementById('terms_accept').checked;
+            const esignConsent = document.getElementById('esign_consent').checked;
+
+            if (!termsAccepted || !esignConsent) {
+                alert('Please accept the terms and conditions to continue.');
+                return;
+            }
+
+            const applicationId = generateId('APP');
+            Storage.set('financial_application_id', applicationId);
+
+            // Track application submission
+            trackEvent('application_submit', {
+                event_category: 'financial',
+                event_action: 'application_submit',
+                application_id: applicationId,
+                product_type: product.type,
+                product_id: product.id,
+                product_name: product.name,
+                annual_income: financialInfo.annual_income,
+                employment_status: financialInfo.employment_status,
+                customer_email: personalInfo.email,
+                customer_city: personalInfo.city,
+                customer_state: personalInfo.state,
+                customer_zip: personalInfo.zip
+            });
+
+            if (product.type === 'loan') {
+                trackEvent('loan_application', {
+                    event_category: 'financial',
+                    event_action: 'loan_application_submit',
+                    loan_amount: product.amount,
+                    loan_term: product.term_years,
+                    monthly_payment: product.monthly_payment,
+                    application_id: applicationId
+                });
+            }
+
+            setTimeout(() => {
+                window.location.href = 'confirmation.html';
+            }, 500);
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Application - Review',
+            page_type: 'application',
+            site_section: 'financial',
+            vertical: 'financial_services',
+            application_step: 3
+        });
+
+        // Initialize
+        displaySummary();
+    </script>
+</body>
+</html>

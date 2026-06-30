@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vehicle Details - AutoDrive</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" class="btn btn-secondary">← Back to Search</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🚗 Vehicle Details</h1>
+        </header>
+
+        <div class="card">
+            <div id="vehicle-details"></div>
+        </div>
+
+        <div class="card">
+            <h2>Vehicle Features</h2>
+            <ul style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; line-height: 2;">
+                <li>✓ Backup Camera</li>
+                <li>✓ Bluetooth</li>
+                <li>✓ Cruise Control</li>
+                <li>✓ Apple CarPlay</li>
+                <li>✓ Keyless Entry</li>
+                <li>✓ Lane Departure Warning</li>
+                <li>✓ Heated Seats</li>
+                <li>✓ Sunroof</li>
+            </ul>
+        </div>
+
+        <div class="btn-group">
+            <button class="btn btn-secondary" onclick="scheduleTestDrive()">
+                📅 Schedule Test Drive
+            </button>
+            <button class="btn btn-primary" onclick="getFinancing()">
+                💰 Get Financing
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let vehicle = {};
+
+        function displayDetails() {
+            vehicle = Storage.get('automotive_selected_vehicle') || {};
+
+            if (!vehicle.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('vehicle-details').innerHTML = `
+                <div style="text-align: center; font-size: 5rem; margin-bottom: 20px;">${vehicle.emoji}</div>
+                <h2 style="text-align: center; margin-bottom: 30px;">${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim}</h2>
+
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                    <div><strong>Price:</strong> ${formatCurrency(vehicle.price)}</div>
+                    <div><strong>Condition:</strong> ${vehicle.condition}</div>
+                    <div><strong>Mileage:</strong> ${vehicle.mileage.toLocaleString()} miles</div>
+                    <div><strong>Color:</strong> ${vehicle.color}</div>
+                    <div><strong>MPG:</strong> ${vehicle.mpg}</div>
+                    <div><strong>Type:</strong> ${vehicle.type}</div>
+                </div>
+            `;
+        }
+
+        function scheduleTestDrive() {
+            trackEvent('test_drive_request', {
+                event_category: 'automotive',
+                event_action: 'request_test_drive',
+                vehicle_id: vehicle.id,
+                vehicle_make: vehicle.make,
+                vehicle_model: vehicle.model,
+                vehicle_price: vehicle.price
+            });
+
+            window.location.href = 'test-drive.html';
+        }
+
+        function getFinancing() {
+            trackEvent('financing_request', {
+                event_category: 'automotive',
+                event_action: 'request_financing',
+                vehicle_id: vehicle.id,
+                vehicle_make: vehicle.make,
+                vehicle_model: vehicle.model,
+                vehicle_price: vehicle.price
+            });
+
+            window.location.href = 'financing.html';
+        }
+
+        trackPageView({
+            page_name: 'Vehicle Details',
+            page_type: 'product_detail',
+            site_section: 'automotive',
+            vertical: 'automotive',
+            vehicle_id: Storage.get('automotive_selected_vehicle')?.id
+        });
+
+        displayDetails();
+    </script>
+</body>
+</html>

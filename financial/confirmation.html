@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Submitted - SecureBank</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Application Submitted!</h1>
+            <p>We're reviewing your application</p>
+        </header>
+
+        <div class="alert alert-success">
+            <strong>🎉 Thank you!</strong> Your application has been submitted successfully.
+            You'll receive a decision within 2-3 business days at <strong id="customer-email"></strong>.
+        </div>
+
+        <div class="card">
+            <h2>Application Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Application ID:</strong> <span id="application-id"></span><br>
+                <strong>Submission Date:</strong> <span id="submission-date"></span><br>
+                <strong>Status:</strong> <span style="color: #667eea; font-weight: bold;">Under Review</span>
+            </div>
+
+            <div id="product-details"></div>
+        </div>
+
+        <div class="card">
+            <h2>Next Steps</h2>
+            <ol style="line-height: 2;">
+                <li>We'll review your application and run a credit check</li>
+                <li>You'll receive an email with our decision within 2-3 business days</li>
+                <li>If approved, your account will be opened and you'll receive your card/documents</li>
+                <li>Check your email for tracking information</li>
+            </ol>
+        </div>
+
+        <div class="card">
+            <h2>Questions?</h2>
+            <p>Contact us at:</p>
+            <p>
+                <strong>Phone:</strong> 1-800-SECURE-1<br>
+                <strong>Email:</strong> applications@securebank.com<br>
+                <strong>Hours:</strong> Monday-Friday, 8am-8pm EST
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary" onclick="resetApplication()">
+                Return to Homepage
+            </a>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let product = {};
+        let personalInfo = {};
+        let applicationId = '';
+
+        function displayConfirmation() {
+            product = Storage.get('financial_product') || {};
+            personalInfo = Storage.get('financial_personal_info') || {};
+            applicationId = Storage.get('financial_application_id') || generateId('APP');
+
+            if (!product.type) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('application-id').textContent = applicationId;
+            document.getElementById('customer-email').textContent = personalInfo.email || 'your email';
+
+            const submissionDate = new Date();
+            document.getElementById('submission-date').textContent = submissionDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            // Display product details
+            if (product.type === 'credit_card') {
+                document.getElementById('product-details').innerHTML = `
+                    <h3 style="margin-bottom: 15px;">Product Applied For</h3>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                        <strong>Card:</strong> ${product.name}<br>
+                        <strong>Category:</strong> ${product.category}<br>
+                        <strong>Annual Fee:</strong> ${product.annual_fee === 0 ? 'No Fee' : formatCurrency(product.annual_fee)}<br>
+                        <strong>Rewards:</strong> ${product.rewards_rate}
+                    </div>
+                `;
+            } else if (product.type === 'loan') {
+                document.getElementById('product-details').innerHTML = `
+                    <h3 style="margin-bottom: 15px;">Loan Details</h3>
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                        <strong>Loan Amount:</strong> ${formatCurrency(product.amount)}<br>
+                        <strong>Term:</strong> ${product.term_years} years<br>
+                        <strong>Estimated APR:</strong> ${product.apr}%<br>
+                        <strong>Estimated Monthly Payment:</strong> ${formatCurrency(product.monthly_payment)}
+                    </div>
+                `;
+            }
+        }
+
+        function resetApplication() {
+            Storage.remove('financial_product');
+            Storage.remove('financial_personal_info');
+            Storage.remove('financial_financial_info');
+            Storage.remove('financial_application_id');
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Application Confirmation',
+            page_type: 'confirmation',
+            site_section: 'financial',
+            vertical: 'financial_services',
+            application_id: Storage.get('financial_application_id')
+        });
+
+        // Initialize
+        displayConfirmation();
+    </script>
+</body>
+</html>

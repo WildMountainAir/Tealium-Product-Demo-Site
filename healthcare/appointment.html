@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Book Appointment - HealthPlus</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" class="btn btn-secondary">← Back to Search</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>📅 Book Appointment</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Find Doctor</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <div class="step-label">Date & Time</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Patient Info</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Doctor Selected</h2>
+            <div id="doctor-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>Select Date & Time</h2>
+            <form id="appointment-form">
+                <div class="form-group">
+                    <label>Appointment Date *</label>
+                    <input type="date" id="appointment_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Time *</label>
+                    <select id="appointment_time" required>
+                        <option value="09:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Reason for Visit *</label>
+                    <select id="visit_reason" required>
+                        <option value="checkup">Annual Checkup</option>
+                        <option value="follow-up">Follow-up Visit</option>
+                        <option value="new-patient">New Patient Visit</option>
+                        <option value="sick">Sick Visit</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Additional Notes</label>
+                    <textarea id="notes" rows="4" placeholder="Any symptoms or concerns you'd like to discuss"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn btn-secondary">← Back to Search</a>
+            <button class="btn btn-primary" onclick="continueToPatientInfo()">
+                Continue to Patient Info →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let doctor = {};
+
+        function displayDoctor() {
+            doctor = Storage.get('healthcare_selected_doctor') || {};
+
+            if (!doctor.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Set min date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('appointment_date').min = today;
+            document.getElementById('appointment_date').value = doctor.next_available;
+
+            document.getElementById('doctor-info').innerHTML = `
+                <div class="cart-item">
+                    <div class="cart-item-image">${doctor.emoji}</div>
+                    <div class="cart-item-details">
+                        <h3>${doctor.name}</h3>
+                        <p><strong>${doctor.specialty}</strong></p>
+                        <p>⭐ ${doctor.rating}/5.0 • ${doctor.years_experience} years experience</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function continueToPatientInfo() {
+            const form = document.getElementById('appointment-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const appointmentDetails = {
+                date: document.getElementById('appointment_date').value,
+                time: document.getElementById('appointment_time').value,
+                reason: document.getElementById('visit_reason').value,
+                notes: document.getElementById('notes').value
+            };
+
+            Storage.set('healthcare_appointment_details', appointmentDetails);
+
+            trackEvent('appointment_date_select', {
+                event_category: 'healthcare',
+                event_action: 'select_appointment_time',
+                doctor_id: doctor.id,
+                appointment_date: appointmentDetails.date,
+                appointment_time: appointmentDetails.time,
+                visit_reason: appointmentDetails.reason
+            });
+
+            window.location.href = 'patient-info.html';
+        }
+
+        trackPageView({
+            page_name: 'Appointment Booking',
+            page_type: 'booking',
+            site_section: 'healthcare',
+            vertical: 'healthcare',
+            booking_step: 2
+        });
+
+        displayDoctor();
+    </script>
+</body>
+</html>

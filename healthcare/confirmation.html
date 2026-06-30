@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Confirmed - HealthPlus</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Appointment Confirmed!</h1>
+            <p>See you soon</p>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Find Doctor</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Date & Time</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Patient Info</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">4</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Success!</strong> Your appointment has been confirmed.
+            A confirmation email has been sent to <strong id="patient-email"></strong>.
+        </div>
+
+        <div class="card">
+            <h2>Appointment Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Confirmation Number:</strong> <span id="appointment-id"></span><br>
+                <strong>Booking Date:</strong> <span id="booking-date"></span>
+            </div>
+
+            <div id="appointment-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>What to Bring</h2>
+            <ul style="line-height: 2;">
+                <li>Photo ID</li>
+                <li>Insurance card</li>
+                <li>List of current medications</li>
+                <li>Any relevant medical records</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary" onclick="resetBooking()">
+                Book Another Appointment
+            </a>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function displayConfirmation() {
+            const doctor = Storage.get('healthcare_selected_doctor') || {};
+            const appointmentDetails = Storage.get('healthcare_appointment_details') || {};
+            const patientInfo = Storage.get('healthcare_patient_info') || {};
+            const appointmentId = Storage.get('healthcare_appointment_id') || generateId('APPT');
+
+            document.getElementById('appointment-id').textContent = appointmentId;
+            document.getElementById('patient-email').textContent = patientInfo.email || 'your email';
+            document.getElementById('booking-date').textContent = new Date().toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            document.getElementById('appointment-info').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    <strong>Doctor:</strong> ${doctor.name}<br>
+                    <strong>Specialty:</strong> ${doctor.specialty}<br>
+                    <strong>Date:</strong> ${new Date(appointmentDetails.date).toLocaleDateString('en-US', {
+                        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                    })}<br>
+                    <strong>Time:</strong> ${appointmentDetails.time}<br>
+                    <strong>Reason:</strong> ${appointmentDetails.reason}<br>
+                    <strong>Patient:</strong> ${patientInfo.first_name} ${patientInfo.last_name}
+                </div>
+            `;
+        }
+
+        function resetBooking() {
+            Storage.remove('healthcare_selected_doctor');
+            Storage.remove('healthcare_appointment_details');
+            Storage.remove('healthcare_patient_info');
+            Storage.remove('healthcare_appointment_id');
+        }
+
+        trackPageView({
+            page_name: 'Appointment Confirmation',
+            page_type: 'confirmation',
+            site_section: 'healthcare',
+            vertical: 'healthcare',
+            booking_step: 4,
+            appointment_id: Storage.get('healthcare_appointment_id')
+        });
+
+        displayConfirmation();
+    </script>
+</body>
+</html>

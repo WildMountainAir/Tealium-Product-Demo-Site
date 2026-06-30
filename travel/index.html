@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SkyTravel - Flights & Hotels</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="../index.html" class="btn btn-secondary">← Back to All Verticals</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✈️ SkyTravel</h1>
+            <p>Book flights and hotels worldwide</p>
+        </header>
+
+        <div class="card">
+            <h2>Search Flights</h2>
+            <form id="search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>From</label>
+                        <select id="origin">
+                            <option value="SFO">San Francisco (SFO)</option>
+                            <option value="LAX">Los Angeles (LAX)</option>
+                            <option value="JFK">New York (JFK)</option>
+                            <option value="ORD">Chicago (ORD)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>To</label>
+                        <select id="destination">
+                            <option value="JFK">New York (JFK)</option>
+                            <option value="LAX">Los Angeles (LAX)</option>
+                            <option value="MIA">Miami (MIA)</option>
+                            <option value="LHR">London (LHR)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Departure Date</label>
+                        <input type="date" id="departure_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Return Date</label>
+                        <input type="date" id="return_date">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Passengers</label>
+                        <select id="passengers">
+                            <option value="1">1 Adult</option>
+                            <option value="2" selected>2 Adults</option>
+                            <option value="3">3 Adults</option>
+                            <option value="4">4 Adults</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Class</label>
+                        <select id="cabin_class">
+                            <option value="economy" selected>Economy</option>
+                            <option value="premium">Premium Economy</option>
+                            <option value="business">Business</option>
+                            <option value="first">First Class</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="searchFlights()" style="width: 100%; margin-top: 20px;">
+                    Search Flights
+                </button>
+            </form>
+        </div>
+
+        <div id="results-container" style="display: none;">
+            <div class="card">
+                <h2>Available Flights</h2>
+                <div id="flight-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        // Set default dates (tomorrow and 7 days out)
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('departure_date').value = tomorrow.toISOString().split('T')[0];
+
+        const returnDate = new Date();
+        returnDate.setDate(returnDate.getDate() + 8);
+        document.getElementById('return_date').value = returnDate.toISOString().split('T')[0];
+
+        // Sample flights
+        const flights = [
+            {
+                id: 'FL001',
+                airline: 'Sky Airlines',
+                origin: 'SFO',
+                destination: 'JFK',
+                departure_time: '08:00 AM',
+                arrival_time: '04:30 PM',
+                duration: '5h 30m',
+                stops: 'Nonstop',
+                price_economy: 299,
+                price_business: 899,
+                emoji: '🛫'
+            },
+            {
+                id: 'FL002',
+                airline: 'Cloud Express',
+                origin: 'SFO',
+                destination: 'JFK',
+                departure_time: '12:00 PM',
+                arrival_time: '08:45 PM',
+                duration: '5h 45m',
+                stops: 'Nonstop',
+                price_economy: 349,
+                price_business: 999,
+                emoji: '✈️'
+            },
+            {
+                id: 'FL003',
+                airline: 'Budget Air',
+                origin: 'SFO',
+                destination: 'JFK',
+                departure_time: '06:00 AM',
+                arrival_time: '05:30 PM',
+                duration: '8h 30m',
+                stops: '1 Stop',
+                price_economy: 199,
+                price_business: 699,
+                emoji: '🛩️'
+            }
+        ];
+
+        function searchFlights() {
+            const origin = document.getElementById('origin').value;
+            const destination = document.getElementById('destination').value;
+            const departureDate = document.getElementById('departure_date').value;
+            const returnDate = document.getElementById('return_date').value;
+            const passengers = parseInt(document.getElementById('passengers').value);
+            const cabinClass = document.getElementById('cabin_class').value;
+
+            // Store search params
+            Storage.set('travel_search', {
+                origin,
+                destination,
+                departure_date: departureDate,
+                return_date: returnDate,
+                passengers,
+                cabin_class: cabinClass
+            });
+
+            // Track search
+            trackEvent('flight_search', {
+                event_category: 'travel',
+                event_action: 'search',
+                origin_airport: origin,
+                destination_airport: destination,
+                departure_date: departureDate,
+                return_date: returnDate,
+                passengers: passengers,
+                cabin_class: cabinClass
+            });
+
+            // Show results
+            displayFlightResults(cabinClass, passengers);
+        }
+
+        function displayFlightResults(cabinClass, passengers) {
+            const resultsContainer = document.getElementById('results-container');
+            const flightResults = document.getElementById('flight-results');
+
+            resultsContainer.style.display = 'block';
+
+            flightResults.innerHTML = flights.map(flight => {
+                const basePrice = cabinClass === 'economy' ? flight.price_economy : flight.price_business;
+                const totalPrice = basePrice * passengers;
+
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-image">${flight.emoji}</div>
+                        <div class="cart-item-details" style="flex-grow: 1;">
+                            <h3>${flight.airline} - ${flight.id}</h3>
+                            <p><strong>${flight.origin} → ${flight.destination}</strong></p>
+                            <p>${flight.departure_time} - ${flight.arrival_time} (${flight.duration})</p>
+                            <p>${flight.stops} • ${cabinClass.charAt(0).toUpperCase() + cabinClass.slice(1)}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div class="price">${formatCurrency(totalPrice)}</div>
+                            <p style="font-size: 0.9rem; color: #666;">for ${passengers} passenger${passengers > 1 ? 's' : ''}</p>
+                            <button class="btn btn-primary" onclick="selectFlight('${flight.id}', ${basePrice})">
+                                Select
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            // Scroll to results
+            resultsContainer.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function selectFlight(flightId, pricePerPerson) {
+            const flight = flights.find(f => f.id === flightId);
+            const searchParams = Storage.get('travel_search');
+
+            Storage.set('travel_selected_flight', {
+                ...flight,
+                price_per_person: pricePerPerson,
+                total_price: pricePerPerson * searchParams.passengers
+            });
+
+            // Track flight selection
+            trackEvent('flight_select', {
+                event_category: 'travel',
+                event_action: 'select_flight',
+                flight_id: flightId,
+                airline: flight.airline,
+                origin: flight.origin,
+                destination: flight.destination,
+                cabin_class: searchParams.cabin_class,
+                passengers: searchParams.passengers,
+                price: pricePerPerson * searchParams.passengers
+            });
+
+            window.location.href = 'travelers.html';
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Flight Search',
+            page_type: 'search',
+            site_section: 'travel',
+            vertical: 'travel'
+        });
+    </script>
+</body>
+</html>

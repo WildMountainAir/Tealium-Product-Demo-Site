@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Information - SecureBank</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="application.html" class="btn btn-secondary">← Back to Personal Info</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>💼 Financial Information</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Personal Info</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <div class="step-label">Financial Info</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Employment & Income</h2>
+            <form id="financial-form">
+                <div class="form-group">
+                    <label>Employment Status *</label>
+                    <select id="employment_status" required>
+                        <option value="employed" selected>Employed</option>
+                        <option value="self-employed">Self-Employed</option>
+                        <option value="retired">Retired</option>
+                        <option value="student">Student</option>
+                        <option value="unemployed">Unemployed</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Employer Name *</label>
+                    <input type="text" id="employer_name" required value="Tech Corp">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Job Title *</label>
+                        <input type="text" id="job_title" required value="Software Engineer">
+                    </div>
+                    <div class="form-group">
+                        <label>Years at Job *</label>
+                        <select id="years_employed" required>
+                            <option value="0-1">Less than 1 year</option>
+                            <option value="1-3">1-3 years</option>
+                            <option value="3-5" selected>3-5 years</option>
+                            <option value="5+">5+ years</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Annual Income *</label>
+                        <input type="number" id="annual_income" required value="85000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Additional Income (optional)</label>
+                        <input type="number" id="additional_income" value="0" min="0" step="1000">
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Housing & Expenses</h3>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Housing Status *</label>
+                        <select id="housing_status" required>
+                            <option value="rent" selected>Rent</option>
+                            <option value="own">Own</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Monthly Housing Payment *</label>
+                        <input type="number" id="monthly_housing" required value="2000" min="0" step="100">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Total Monthly Debt Payments (car, credit cards, etc.)</label>
+                    <input type="number" id="monthly_debt" value="500" min="0" step="50">
+                </div>
+
+                <h3 style="margin-top: 30px; margin-bottom: 15px;">Banking Information</h3>
+
+                <div class="form-group">
+                    <label>Bank Name *</label>
+                    <input type="text" id="bank_name" required value="First National Bank">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Account Type *</label>
+                        <select id="account_type" required>
+                            <option value="checking" selected>Checking</option>
+                            <option value="savings">Savings</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Account Number *</label>
+                        <input type="text" id="account_number" required value="123456789">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Routing Number *</label>
+                    <input type="text" id="routing_number" required value="021000021" maxlength="9">
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="application.html" class="btn btn-secondary">← Back to Personal Info</a>
+            <button class="btn btn-primary" onclick="reviewApplication()">
+                Review Application →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let product = {};
+        let personalInfo = {};
+
+        function init() {
+            product = Storage.get('financial_product') || {};
+            personalInfo = Storage.get('financial_personal_info') || {};
+
+            if (!product.type || !personalInfo.email) {
+                window.location.href = 'index.html';
+                return;
+            }
+        }
+
+        function reviewApplication() {
+            const form = document.getElementById('financial-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const financialInfo = {
+                employment_status: document.getElementById('employment_status').value,
+                employer_name: document.getElementById('employer_name').value,
+                job_title: document.getElementById('job_title').value,
+                years_employed: document.getElementById('years_employed').value,
+                annual_income: parseFloat(document.getElementById('annual_income').value),
+                additional_income: parseFloat(document.getElementById('additional_income').value),
+                housing_status: document.getElementById('housing_status').value,
+                monthly_housing: parseFloat(document.getElementById('monthly_housing').value),
+                monthly_debt: parseFloat(document.getElementById('monthly_debt').value),
+                bank_name: document.getElementById('bank_name').value,
+                account_type: document.getElementById('account_type').value,
+                account_number: document.getElementById('account_number').value,
+                routing_number: document.getElementById('routing_number').value
+            };
+
+            Storage.set('financial_financial_info', financialInfo);
+
+            trackEvent('application_progress', {
+                event_category: 'financial',
+                event_action: 'application_step_2',
+                application_step: 2,
+                product_type: product.type,
+                product_id: product.id,
+                annual_income: financialInfo.annual_income,
+                employment_status: financialInfo.employment_status
+            });
+
+            window.location.href = 'review.html';
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Application - Financial Info',
+            page_type: 'application',
+            site_section: 'financial',
+            vertical: 'financial_services',
+            application_step: 2
+        });
+
+        // Initialize
+        init();
+    </script>
+</body>
+</html>

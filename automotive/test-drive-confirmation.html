@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Drive Confirmed - AutoDrive</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Test Drive Confirmed!</h1>
+            <p>See you soon</p>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Date & Time</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Contact Info</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Success!</strong> Your test drive has been scheduled.
+            A confirmation has been sent to <strong id="customer-email"></strong>.
+        </div>
+
+        <div class="card">
+            <h2>Test Drive Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Confirmation Number:</strong> <span id="testdrive-id"></span><br>
+                <strong>Booking Date:</strong> <span id="booking-date"></span>
+            </div>
+
+            <div id="testdrive-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>What to Bring</h2>
+            <ul style="line-height: 2;">
+                <li>Valid driver's license</li>
+                <li>Proof of insurance</li>
+                <li>Arrive 10 minutes early</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary" onclick="reset()">
+                Browse More Vehicles
+            </a>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function displayConfirmation() {
+            const vehicle = Storage.get('automotive_selected_vehicle') || {};
+            const testDriveDetails = Storage.get('automotive_testdrive_details') || {};
+            const contactInfo = Storage.get('automotive_contact_info') || {};
+            const testDriveId = Storage.get('automotive_testdrive_id') || generateId('TD');
+
+            document.getElementById('testdrive-id').textContent = testDriveId;
+            document.getElementById('customer-email').textContent = contactInfo.email || 'your email';
+            document.getElementById('booking-date').textContent = new Date().toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+            });
+
+            document.getElementById('testdrive-info').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    <strong>Vehicle:</strong> ${vehicle.year} ${vehicle.make} ${vehicle.model}<br>
+                    <strong>Date:</strong> ${new Date(testDriveDetails.date).toLocaleDateString('en-US', {
+                        weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+                    })}<br>
+                    <strong>Time:</strong> ${testDriveDetails.time}<br>
+                    <strong>Location:</strong> ${testDriveDetails.dealership}<br>
+                    <strong>Customer:</strong> ${contactInfo.first_name} ${contactInfo.last_name}
+                </div>
+            `;
+        }
+
+        function reset() {
+            Storage.remove('automotive_selected_vehicle');
+            Storage.remove('automotive_testdrive_details');
+            Storage.remove('automotive_contact_info');
+            Storage.remove('automotive_testdrive_id');
+        }
+
+        trackPageView({
+            page_name: 'Test Drive Confirmation',
+            page_type: 'confirmation',
+            site_section: 'automotive',
+            vertical: 'automotive',
+            form_step: 3,
+            test_drive_id: Storage.get('automotive_testdrive_id')
+        });
+
+        displayConfirmation();
+    </script>
+</body>
+</html>

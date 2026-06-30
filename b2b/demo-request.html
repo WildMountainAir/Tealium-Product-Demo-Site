@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Enterprise Demo - CloudSync</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" class="btn btn-secondary">← Back to Pricing</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🎯 Request Enterprise Demo</h1>
+            <p>Let's find the perfect solution for your business</p>
+        </header>
+
+        <div class="card">
+            <h2>Contact Information</h2>
+            <form id="demo-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="first_name" required value="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="last_name" required value="Smith">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Work Email *</label>
+                    <input type="email" id="email" required value="john.smith@enterprise.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" required value="555-123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label>Company Name *</label>
+                    <input type="text" id="company_name" required value="Enterprise Corp">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Company Size *</label>
+                        <select id="company_size" required>
+                            <option value="500-1000">500-1,000 employees</option>
+                            <option value="1000-5000">1,000-5,000 employees</option>
+                            <option value="5000+">5,000+ employees</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Industry *</label>
+                        <select id="industry" required>
+                            <option value="technology">Technology</option>
+                            <option value="retail">Retail</option>
+                            <option value="finance">Financial Services</option>
+                            <option value="healthcare">Healthcare</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tell us about your needs</label>
+                    <textarea id="message" rows="4" placeholder="What challenges are you trying to solve?"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn btn-secondary">← Back to Pricing</a>
+            <button class="btn btn-primary" onclick="submitDemo()">
+                Request Demo →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function submitDemo() {
+            const form = document.getElementById('demo-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const demoId = generateId('DEMO');
+
+            trackEvent('demo_request', {
+                event_category: 'b2b',
+                event_action: 'demo_request_submit',
+                demo_id: demoId,
+                plan_name: 'enterprise',
+                company_name: document.getElementById('company_name').value,
+                company_size: document.getElementById('company_size').value,
+                industry: document.getElementById('industry').value,
+                contact_email: document.getElementById('email').value
+            });
+
+            alert('✅ Thank you! Our enterprise team will contact you within 24 hours.');
+            window.location.href = 'index.html';
+        }
+
+        trackPageView({
+            page_name: 'Demo Request',
+            page_type: 'lead_form',
+            site_section: 'b2b',
+            vertical: 'b2b_saas'
+        });
+    </script>
+</body>
+</html>

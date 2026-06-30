@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank - Credit Cards & Loans</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="../index.html" class="btn btn-secondary">← Back to All Verticals</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>💳 SecureBank</h1>
+            <p>Credit cards, loans, and financial services</p>
+        </header>
+
+        <div class="card">
+            <h2>Featured Credit Cards</h2>
+            <div class="product-grid" id="credit-cards">
+                <!-- Cards will be loaded here -->
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 30px;">
+            <h2>Personal Loan Calculator</h2>
+            <form id="loan-calculator">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Loan Amount</label>
+                        <input type="number" id="loan_amount" value="25000" min="1000" max="100000" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label>Loan Term (years)</label>
+                        <select id="loan_term">
+                            <option value="2">2 years</option>
+                            <option value="3" selected>3 years</option>
+                            <option value="5">5 years</option>
+                            <option value="7">7 years</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="calculateLoan()" style="width: 100%;">
+                    Calculate Monthly Payment
+                </button>
+            </form>
+
+            <div id="loan-results" style="display: none; margin-top: 20px; background: #f5f5f5; padding: 20px; border-radius: 8px;">
+                <h3>Estimated Monthly Payment</h3>
+                <div class="price" id="monthly-payment" style="margin: 15px 0;"></div>
+                <p style="color: #666; margin-bottom: 20px;">Based on <span id="interest-rate"></span>% APR</p>
+                <button class="btn btn-primary" onclick="applyForLoan()">
+                    Apply for This Loan →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        const creditCards = [
+            {
+                id: 'CC001',
+                name: 'Cash Back Rewards',
+                category: 'Rewards',
+                annual_fee: 0,
+                rewards_rate: '2%',
+                intro_apr: '0% for 12 months',
+                emoji: '💰'
+            },
+            {
+                id: 'CC002',
+                name: 'Travel Elite',
+                category: 'Travel',
+                annual_fee: 95,
+                rewards_rate: '3x points',
+                intro_apr: '15.99% APR',
+                emoji: '✈️'
+            },
+            {
+                id: 'CC003',
+                name: 'Business Pro',
+                category: 'Business',
+                annual_fee: 199,
+                rewards_rate: '1.5%',
+                intro_apr: '13.99% APR',
+                emoji: '💼'
+            }
+        ];
+
+        function renderCreditCards() {
+            const grid = document.getElementById('credit-cards');
+            grid.innerHTML = creditCards.map(card => `
+                <div class="product-card">
+                    <div class="product-image">${card.emoji}</div>
+                    <h3>${card.name}</h3>
+                    <p>${card.category}</p>
+                    <div style="margin: 15px 0;">
+                        <strong>Rewards:</strong> ${card.rewards_rate}<br>
+                        <strong>Annual Fee:</strong> ${card.annual_fee === 0 ? 'No Fee' : formatCurrency(card.annual_fee)}<br>
+                        <strong>APR:</strong> ${card.intro_apr}
+                    </div>
+                    <button class="btn btn-primary" onclick="applyForCard('${card.id}')">
+                        Apply Now
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function applyForCard(cardId) {
+            const card = creditCards.find(c => c.id === cardId);
+            Storage.set('financial_product', {
+                type: 'credit_card',
+                ...card
+            });
+
+            trackEvent('product_view', {
+                event_category: 'financial',
+                event_action: 'view_credit_card',
+                product_id: card.id,
+                product_name: card.name,
+                product_category: card.category,
+                annual_fee: card.annual_fee
+            });
+
+            window.location.href = 'application.html';
+        }
+
+        function calculateLoan() {
+            const amount = parseFloat(document.getElementById('loan_amount').value);
+            const years = parseInt(document.getElementById('loan_term').value);
+            const apr = 6.99; // Fixed rate for demo
+
+            // Calculate monthly payment
+            const monthlyRate = apr / 100 / 12;
+            const numPayments = years * 12;
+            const monthlyPayment = amount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+            document.getElementById('monthly-payment').textContent = formatCurrency(monthlyPayment);
+            document.getElementById('interest-rate').textContent = apr.toFixed(2);
+            document.getElementById('loan-results').style.display = 'block';
+
+            trackEvent('loan_calculate', {
+                event_category: 'financial',
+                event_action: 'calculate_loan',
+                loan_amount: amount,
+                loan_term: years,
+                interest_rate: apr,
+                monthly_payment: monthlyPayment.toFixed(2)
+            });
+
+            document.getElementById('loan-results').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function applyForLoan() {
+            const amount = parseFloat(document.getElementById('loan_amount').value);
+            const years = parseInt(document.getElementById('loan_term').value);
+            const apr = 6.99;
+            const monthlyRate = apr / 100 / 12;
+            const numPayments = years * 12;
+            const monthlyPayment = amount * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / (Math.pow(1 + monthlyRate, numPayments) - 1);
+
+            Storage.set('financial_product', {
+                type: 'loan',
+                id: 'LOAN001',
+                name: 'Personal Loan',
+                category: 'Personal Loan',
+                amount: amount,
+                term_years: years,
+                apr: apr,
+                monthly_payment: monthlyPayment.toFixed(2)
+            });
+
+            trackEvent('loan_apply_start', {
+                event_category: 'financial',
+                event_action: 'start_loan_application',
+                loan_amount: amount,
+                loan_term: years,
+                monthly_payment: monthlyPayment.toFixed(2)
+            });
+
+            window.location.href = 'application.html';
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Financial Products',
+            page_type: 'home',
+            site_section: 'financial',
+            vertical: 'financial_services'
+        });
+
+        // Initialize
+        renderCreditCards();
+    </script>
+</body>
+</html>

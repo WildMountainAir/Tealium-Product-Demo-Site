@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome to CloudSync!</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Welcome to CloudSync!</h1>
+            <p>Your account is ready</p>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Account</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Company</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Success!</strong> Your account has been created. Check your email at <strong id="user-email"></strong> to verify and get started.
+        </div>
+
+        <div class="card">
+            <h2>Account Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Account ID:</strong> <span id="account-id"></span><br>
+                <strong>Plan:</strong> <span id="plan-name"></span><br>
+                <strong>Trial Ends:</strong> <span id="trial-end"></span><br>
+                <strong>Company:</strong> <span id="company-name"></span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Next Steps</h2>
+            <ol style="line-height: 2;">
+                <li>Check your email and verify your account</li>
+                <li>Install the CloudSync tracking code on your website</li>
+                <li>Connect your data sources and integrations</li>
+                <li>Invite your team members</li>
+                <li>Set up your first dashboard</li>
+            </ol>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <button class="btn btn-primary" onclick="goToDashboard()">
+                Go to Dashboard →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function displayConfirmation() {
+            const accountInfo = Storage.get('b2b_account_info') || {};
+            const companyInfo = Storage.get('b2b_company_info') || {};
+            const selectedPlan = Storage.get('b2b_selected_plan') || {};
+            const accountId = Storage.get('b2b_account_id') || generateId('ACCT');
+
+            document.getElementById('account-id').textContent = accountId;
+            document.getElementById('user-email').textContent = accountInfo.email || 'your email';
+            document.getElementById('plan-name').textContent = selectedPlan.plan;
+            document.getElementById('company-name').textContent = companyInfo.company_name;
+
+            const trialEnd = new Date();
+            trialEnd.setDate(trialEnd.getDate() + (selectedPlan.trial_days || 14));
+            document.getElementById('trial-end').textContent = trialEnd.toLocaleDateString('en-US', {
+                month: 'long', day: 'numeric', year: 'numeric'
+            });
+        }
+
+        function goToDashboard() {
+            alert('Demo Mode: This would redirect to your CloudSync dashboard.');
+            resetSignup();
+            window.location.href = 'index.html';
+        }
+
+        function resetSignup() {
+            Storage.remove('b2b_selected_plan');
+            Storage.remove('b2b_account_info');
+            Storage.remove('b2b_company_info');
+            Storage.remove('b2b_account_id');
+        }
+
+        trackPageView({
+            page_name: 'Sign Up Confirmation',
+            page_type: 'confirmation',
+            site_section: 'b2b',
+            vertical: 'b2b_saas',
+            signup_step: 3,
+            account_id: Storage.get('b2b_account_id')
+        });
+
+        displayConfirmation();
+    </script>
+</body>
+</html>

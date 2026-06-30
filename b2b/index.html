@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CloudSync - Enterprise Data Platform</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="../index.html" class="btn btn-secondary">← Back to All Verticals</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>💼 CloudSync</h1>
+            <p>Enterprise Customer Data Platform</p>
+        </header>
+
+        <div class="card">
+            <h2>Pricing Plans</h2>
+            <div class="product-grid">
+                <div class="product-card">
+                    <h3>Starter</h3>
+                    <div class="price">$99<span style="font-size: 1rem;">/mo</span></div>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>Up to 10,000 events/month</li>
+                        <li>3 team members</li>
+                        <li>Email support</li>
+                        <li>Basic integrations</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="selectPlan('starter', 99)">
+                        Start Free Trial
+                    </button>
+                </div>
+
+                <div class="product-card" style="border: 2px solid #667eea;">
+                    <span class="badge" style="position: absolute; top: 10px; right: 10px;">Popular</span>
+                    <h3>Professional</h3>
+                    <div class="price">$499<span style="font-size: 1rem;">/mo</span></div>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>Up to 100,000 events/month</li>
+                        <li>10 team members</li>
+                        <li>Priority support</li>
+                        <li>Advanced integrations</li>
+                        <li>Custom dashboards</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="selectPlan('professional', 499)">
+                        Start Free Trial
+                    </button>
+                </div>
+
+                <div class="product-card">
+                    <h3>Enterprise</h3>
+                    <div class="price">Custom</div>
+                    <ul style="text-align: left; margin: 20px 0;">
+                        <li>Unlimited events</li>
+                        <li>Unlimited team members</li>
+                        <li>Dedicated support</li>
+                        <li>All integrations</li>
+                        <li>Custom SLAs</li>
+                        <li>On-premise option</li>
+                    </ul>
+                    <button class="btn btn-primary" onclick="requestDemo()">
+                        Request Demo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function selectPlan(planName, price) {
+            Storage.set('b2b_selected_plan', {
+                plan: planName,
+                price: price,
+                trial_days: 14
+            });
+
+            trackEvent('plan_select', {
+                event_category: 'b2b',
+                event_action: 'select_plan',
+                plan_name: planName,
+                plan_price: price
+            });
+
+            window.location.href = 'signup.html';
+        }
+
+        function requestDemo() {
+            Storage.set('b2b_selected_plan', {
+                plan: 'enterprise',
+                price: null,
+                demo_request: true
+            });
+
+            trackEvent('demo_request_start', {
+                event_category: 'b2b',
+                event_action: 'request_demo',
+                plan_name: 'enterprise'
+            });
+
+            window.location.href = 'demo-request.html';
+        }
+
+        trackPageView({
+            page_name: 'Pricing',
+            page_type: 'pricing',
+            site_section: 'b2b',
+            vertical: 'b2b_saas'
+        });
+    </script>
+</body>
+</html>

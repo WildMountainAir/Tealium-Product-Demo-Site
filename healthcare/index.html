@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HealthPlus - Book an Appointment</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="../index.html" class="btn btn-secondary">← Back to All Verticals</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🏥 HealthPlus Medical</h1>
+            <p>Book appointments with top healthcare providers</p>
+        </header>
+
+        <div class="card">
+            <h2>Find a Doctor</h2>
+            <form id="doctor-search">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Specialty</label>
+                        <select id="specialty">
+                            <option value="general">General Practice</option>
+                            <option value="cardiology">Cardiology</option>
+                            <option value="dermatology">Dermatology</option>
+                            <option value="orthopedics">Orthopedics</option>
+                            <option value="pediatrics">Pediatrics</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <select id="location">
+                            <option value="sf">San Francisco</option>
+                            <option value="la">Los Angeles</option>
+                            <option value="ny">New York</option>
+                            <option value="chicago">Chicago</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="searchDoctors()" style="width: 100%;">
+                    Search Doctors
+                </button>
+            </form>
+        </div>
+
+        <div id="doctors-container" style="display: none;">
+            <div class="card">
+                <h2>Available Doctors</h2>
+                <div id="doctors-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        const doctors = [
+            {
+                id: 'DOC001',
+                name: 'Dr. Sarah Johnson',
+                specialty: 'General Practice',
+                rating: 4.9,
+                years_experience: 15,
+                next_available: '2026-07-02',
+                emoji: '👩‍⚕️'
+            },
+            {
+                id: 'DOC002',
+                name: 'Dr. Michael Chen',
+                specialty: 'Cardiology',
+                rating: 4.8,
+                years_experience: 20,
+                next_available: '2026-07-05',
+                emoji: '👨‍⚕️'
+            },
+            {
+                id: 'DOC003',
+                name: 'Dr. Emily Rodriguez',
+                specialty: 'Dermatology',
+                rating: 5.0,
+                years_experience: 12,
+                next_available: '2026-07-01',
+                emoji: '👩‍⚕️'
+            }
+        ];
+
+        function searchDoctors() {
+            const specialty = document.getElementById('specialty').value;
+            const location = document.getElementById('location').value;
+
+            Storage.set('healthcare_search', {
+                specialty: specialty,
+                location: location
+            });
+
+            trackEvent('doctor_search', {
+                event_category: 'healthcare',
+                event_action: 'search_doctors',
+                specialty: specialty,
+                location: location
+            });
+
+            displayDoctors();
+        }
+
+        function displayDoctors() {
+            const container = document.getElementById('doctors-container');
+            const list = document.getElementById('doctors-list');
+
+            container.style.display = 'block';
+
+            list.innerHTML = doctors.map(doctor => `
+                <div class="cart-item">
+                    <div class="cart-item-image">${doctor.emoji}</div>
+                    <div class="cart-item-details" style="flex-grow: 1;">
+                        <h3>${doctor.name}</h3>
+                        <p><strong>${doctor.specialty}</strong></p>
+                        <p>⭐ ${doctor.rating}/5.0 • ${doctor.years_experience} years experience</p>
+                        <p>Next Available: <strong>${new Date(doctor.next_available).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</strong></p>
+                    </div>
+                    <div>
+                        <button class="btn btn-primary" onclick="selectDoctor('${doctor.id}')">
+                            Book Appointment
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function selectDoctor(doctorId) {
+            const doctor = doctors.find(d => d.id === doctorId);
+            Storage.set('healthcare_selected_doctor', doctor);
+
+            trackEvent('doctor_select', {
+                event_category: 'healthcare',
+                event_action: 'select_doctor',
+                doctor_id: doctor.id,
+                doctor_name: doctor.name,
+                specialty: doctor.specialty
+            });
+
+            window.location.href = 'appointment.html';
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Find a Doctor',
+            page_type: 'search',
+            site_section: 'healthcare',
+            vertical: 'healthcare'
+        });
+    </script>
+</body>
+</html>

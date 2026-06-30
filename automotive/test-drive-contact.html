@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Information - AutoDrive</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="test-drive.html" class="btn btn-secondary">← Back</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>👤 Contact Information</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Date & Time</div>
+            </div>
+            <div class="step active">
+                <div class="step-number">2</div>
+                <div class="step-label">Contact Info</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Your Information</h2>
+            <form id="contact-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="first_name" required value="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="last_name" required value="Smith">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" required value="john.smith@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" required value="555-123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label>Driver's License Number *</label>
+                    <input type="text" id="license" required value="D1234567">
+                </div>
+
+                <div class="form-group">
+                    <label>Special Requests or Questions</label>
+                    <textarea id="notes" rows="3" placeholder="Any specific features you'd like to test?"></textarea>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="test-drive.html" class="btn btn-secondary">← Back</a>
+            <button class="btn btn-primary" onclick="confirmTestDrive()">
+                Confirm Test Drive →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        function confirmTestDrive() {
+            const form = document.getElementById('contact-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const contactInfo = {
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                license: document.getElementById('license').value,
+                notes: document.getElementById('notes').value
+            };
+
+            Storage.set('automotive_contact_info', contactInfo);
+
+            const vehicle = Storage.get('automotive_selected_vehicle') || {};
+            const testDriveDetails = Storage.get('automotive_testdrive_details') || {};
+            const testDriveId = generateId('TD');
+            Storage.set('automotive_testdrive_id', testDriveId);
+
+            trackEvent('test_drive_confirmed', {
+                event_category: 'automotive',
+                event_action: 'confirm_test_drive',
+                test_drive_id: testDriveId,
+                vehicle_id: vehicle.id,
+                vehicle_make: vehicle.make,
+                vehicle_model: vehicle.model,
+                vehicle_price: vehicle.price,
+                test_drive_date: testDriveDetails.date,
+                customer_email: contactInfo.email
+            });
+
+            window.location.href = 'test-drive-confirmation.html';
+        }
+
+        trackPageView({
+            page_name: 'Test Drive - Contact',
+            page_type: 'lead_form',
+            site_section: 'automotive',
+            vertical: 'automotive',
+            form_step: 2
+        });
+    </script>
+</body>
+</html>

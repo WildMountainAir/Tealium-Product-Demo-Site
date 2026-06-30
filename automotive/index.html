@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoDrive - New & Used Vehicles</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="../index.html" class="btn btn-secondary">← Back to All Verticals</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🚗 AutoDrive Motors</h1>
+            <p>Find your perfect vehicle</p>
+        </header>
+
+        <div class="card">
+            <h2>Search Vehicles</h2>
+            <form id="search-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vehicle Type</label>
+                        <select id="vehicle_type">
+                            <option value="all">All Types</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="truck">Truck</option>
+                            <option value="coupe">Coupe</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Condition</label>
+                        <select id="condition">
+                            <option value="new">New</option>
+                            <option value="used">Used</option>
+                            <option value="certified">Certified Pre-Owned</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Max Price</label>
+                        <select id="max_price">
+                            <option value="100000">Any Price</option>
+                            <option value="25000">Under $25,000</option>
+                            <option value="35000">Under $35,000</option>
+                            <option value="50000">Under $50,000</option>
+                            <option value="75000">Under $75,000</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Location</label>
+                        <input type="text" id="zip_code" placeholder="ZIP Code" value="94102">
+                    </div>
+                </div>
+
+                <button type="button" class="btn btn-primary" onclick="searchVehicles()" style="width: 100%;">
+                    Search Vehicles
+                </button>
+            </form>
+        </div>
+
+        <div id="results-container">
+            <div class="card">
+                <h2>Available Vehicles</h2>
+                <div id="vehicle-results"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        const vehicles = [
+            {
+                id: 'VEH001',
+                year: 2024,
+                make: 'Audi',
+                model: 'A4',
+                trim: 'Premium Plus',
+                type: 'sedan',
+                condition: 'new',
+                price: 45900,
+                mileage: 8,
+                color: 'Brilliant Black',
+                mpg: '27/34',
+                emoji: '🚗'
+            },
+            {
+                id: 'VEH002',
+                year: 2024,
+                make: 'Audi',
+                model: 'Q7',
+                trim: 'Prestige Quattro',
+                type: 'suv',
+                condition: 'new',
+                price: 68900,
+                mileage: 12,
+                color: 'Navarra Blue Metallic',
+                mpg: '19/23',
+                emoji: '🚙'
+            },
+            {
+                id: 'VEH003',
+                year: 2024,
+                make: 'Audi',
+                model: 'e-tron GT',
+                trim: 'Quattro',
+                type: 'sedan',
+                condition: 'new',
+                price: 107900,
+                mileage: 5,
+                color: 'Daytona Gray',
+                mpg: 'Electric',
+                emoji: '⚡'
+            },
+            {
+                id: 'VEH004',
+                year: 2023,
+                make: 'Audi',
+                model: 'Q5',
+                trim: 'Premium Plus',
+                type: 'suv',
+                condition: 'certified',
+                price: 42500,
+                mileage: 15000,
+                color: 'Glacier White',
+                mpg: '23/28',
+                emoji: '🚙'
+            },
+            {
+                id: 'VEH005',
+                year: 2024,
+                make: 'Audi',
+                model: 'A6',
+                trim: 'Premium',
+                type: 'sedan',
+                condition: 'new',
+                price: 59900,
+                mileage: 10,
+                color: 'Mythos Black',
+                mpg: '25/32',
+                emoji: '🚗'
+            },
+            {
+                id: 'VEH006',
+                year: 2024,
+                make: 'Audi',
+                model: 'Q3',
+                trim: 'S line Premium',
+                type: 'suv',
+                condition: 'new',
+                price: 38900,
+                mileage: 6,
+                color: 'Turbo Blue',
+                mpg: '23/30',
+                emoji: '🚙'
+            }
+        ];
+
+        function searchVehicles() {
+            const searchParams = {
+                vehicle_type: document.getElementById('vehicle_type').value,
+                condition: document.getElementById('condition').value,
+                max_price: document.getElementById('max_price').value,
+                zip_code: document.getElementById('zip_code').value
+            };
+
+            Storage.set('automotive_search', searchParams);
+
+            trackEvent('vehicle_search', {
+                event_category: 'automotive',
+                event_action: 'search_vehicles',
+                vehicle_type: searchParams.vehicle_type,
+                condition: searchParams.condition,
+                max_price: searchParams.max_price,
+                zip_code: searchParams.zip_code
+            });
+
+            displayVehicles();
+        }
+
+        function displayVehicles() {
+            const results = document.getElementById('vehicle-results');
+
+            results.innerHTML = vehicles.map(vehicle => `
+                <div class="cart-item">
+                    <div class="cart-item-image" style="font-size: 3rem;">${vehicle.emoji}</div>
+                    <div class="cart-item-details" style="flex-grow: 1;">
+                        <h3>${vehicle.year} ${vehicle.make} ${vehicle.model} ${vehicle.trim}</h3>
+                        <p><strong>${vehicle.condition.charAt(0).toUpperCase() + vehicle.condition.slice(1)}</strong> • ${vehicle.mileage.toLocaleString()} miles</p>
+                        <p>${vehicle.color} • ${vehicle.mpg} MPG</p>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="price">${formatCurrency(vehicle.price)}</div>
+                        <button class="btn btn-primary" onclick="viewDetails('${vehicle.id}')" style="margin-top: 10px;">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function viewDetails(vehicleId) {
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            Storage.set('automotive_selected_vehicle', vehicle);
+
+            trackEvent('vehicle_view', {
+                event_category: 'automotive',
+                event_action: 'view_vehicle',
+                vehicle_id: vehicle.id,
+                vehicle_make: vehicle.make,
+                vehicle_model: vehicle.model,
+                vehicle_year: vehicle.year,
+                vehicle_price: vehicle.price,
+                vehicle_condition: vehicle.condition
+            });
+
+            window.location.href = 'details.html';
+        }
+
+        trackPageView({
+            page_name: 'Vehicle Search',
+            page_type: 'search',
+            site_section: 'automotive',
+            vertical: 'automotive'
+        });
+
+        // Display vehicles on load
+        displayVehicles();
+    </script>
+</body>
+</html>

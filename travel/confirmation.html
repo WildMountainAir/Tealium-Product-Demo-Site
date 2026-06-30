@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmed - SkyTravel</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Booking Confirmed!</h1>
+            <p>Have a great trip</p>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Search</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Select</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Travelers</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">4</div>
+                <div class="step-label">Payment</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">5</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Success!</strong> Your flight has been booked successfully.
+            A confirmation email has been sent to <strong id="customer-email"></strong>.
+        </div>
+
+        <div class="card">
+            <h2>Booking Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Booking Reference:</strong> <span id="booking-ref"></span><br>
+                <strong>Booking Date:</strong> <span id="booking-date"></span>
+            </div>
+
+            <h3 style="margin-bottom: 15px;">Flight Information</h3>
+            <div id="flight-info"></div>
+
+            <h3 style="margin-top: 30px; margin-bottom: 15px;">Passengers</h3>
+            <div id="passengers-list"></div>
+        </div>
+
+        <div class="card">
+            <div class="cart-summary" id="booking-summary"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary" onclick="resetBooking()">
+                Book Another Flight
+            </a>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let searchParams = {};
+        let selectedFlight = {};
+        let travelersInfo = {};
+        let bookingRef = '';
+
+        function displayConfirmation() {
+            searchParams = Storage.get('travel_search') || {};
+            selectedFlight = Storage.get('travel_selected_flight') || {};
+            travelersInfo = Storage.get('travel_travelers') || {};
+            bookingRef = Storage.get('travel_booking_ref') || generateId('BOOK');
+
+            if (!selectedFlight.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Display booking reference
+            document.getElementById('booking-ref').textContent = bookingRef;
+            document.getElementById('customer-email').textContent = travelersInfo.contact_email || 'your email';
+
+            const bookingDate = new Date();
+            document.getElementById('booking-date').textContent = bookingDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            // Display flight info
+            document.getElementById('flight-info').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    <div style="font-size: 2rem; margin-bottom: 10px;">${selectedFlight.emoji}</div>
+                    <strong>${selectedFlight.airline} - ${selectedFlight.id}</strong><br>
+                    <strong>Route:</strong> ${selectedFlight.origin} → ${selectedFlight.destination}<br>
+                    <strong>Departure:</strong> ${searchParams.departure_date} at ${selectedFlight.departure_time}<br>
+                    <strong>Arrival:</strong> ${searchParams.departure_date} at ${selectedFlight.arrival_time}<br>
+                    <strong>Duration:</strong> ${selectedFlight.duration}<br>
+                    <strong>Class:</strong> ${searchParams.cabin_class}<br>
+                    ${searchParams.return_date ? `<strong>Return:</strong> ${searchParams.return_date}` : ''}
+                </div>
+            `;
+
+            // Display passengers
+            if (travelersInfo.travelers) {
+                document.getElementById('passengers-list').innerHTML = travelersInfo.travelers.map((traveler, i) => `
+                    <div style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 10px;">
+                        <strong>Passenger ${i + 1}:</strong> ${traveler.first_name} ${traveler.last_name}<br>
+                        <strong>DOB:</strong> ${traveler.dob}
+                    </div>
+                `).join('');
+            }
+
+            // Display summary
+            const subtotal = selectedFlight.total_price || 0;
+            const taxes = subtotal * 0.15;
+            const fees = 25.00 * searchParams.passengers;
+            const total = subtotal + taxes + fees;
+
+            document.getElementById('booking-summary').innerHTML = `
+                <h3 style="margin-bottom: 15px;">Total Paid</h3>
+                <div class="summary-row">
+                    <span>Flight Total:</span>
+                    <span>${formatCurrency(subtotal)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Taxes & Fees:</span>
+                    <span>${formatCurrency(taxes + fees)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Paid:</span>
+                    <span>${formatCurrency(total)}</span>
+                </div>
+            `;
+        }
+
+        function resetBooking() {
+            Storage.remove('travel_search');
+            Storage.remove('travel_selected_flight');
+            Storage.remove('travel_travelers');
+            Storage.remove('travel_booking_ref');
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Booking Confirmation',
+            page_type: 'confirmation',
+            site_section: 'travel',
+            vertical: 'travel',
+            checkout_step: 5,
+            booking_reference: Storage.get('travel_booking_ref')
+        });
+
+        // Initialize
+        displayConfirmation();
+    </script>
+</body>
+</html>

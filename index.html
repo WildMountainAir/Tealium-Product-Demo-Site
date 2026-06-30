@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tealium Demo Site - Multi-Vertical Testing</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tealium Multi-Vertical Demo Site</h1>
+            <p class="subtitle">Test tracking across different industries and checkout flows</p>
+        </header>
+
+        <main>
+            <section class="vertical-selector">
+                <h2>Select a Vertical to Demo</h2>
+
+                <div class="vertical-grid">
+                    <a href="retail/index.html" class="vertical-card">
+                        <div class="icon">🛍️</div>
+                        <h3>Retail / eCommerce</h3>
+                        <p>Online store with product browsing, cart, and checkout</p>
+                        <span class="badge">4-step flow</span>
+                    </a>
+
+                    <a href="travel/index.html" class="vertical-card">
+                        <div class="icon">✈️</div>
+                        <h3>Travel / Hospitality</h3>
+                        <p>Flight and hotel booking with multi-traveler support</p>
+                        <span class="badge">5-step flow</span>
+                    </a>
+
+                    <a href="financial/index.html" class="vertical-card">
+                        <div class="icon">💳</div>
+                        <h3>Financial Services</h3>
+                        <p>Credit card application and loan calculator</p>
+                        <span class="badge">3-step flow</span>
+                    </a>
+
+                    <a href="healthcare/index.html" class="vertical-card">
+                        <div class="icon">🏥</div>
+                        <h3>Healthcare</h3>
+                        <p>Appointment booking and insurance verification</p>
+                        <span class="badge">4-step flow</span>
+                    </a>
+
+                    <a href="b2b/index.html" class="vertical-card">
+                        <div class="icon">💼</div>
+                        <h3>B2B / SaaS</h3>
+                        <p>Software trial signup and enterprise demo request</p>
+                        <span class="badge">3-step flow</span>
+                    </a>
+
+                    <a href="automotive/index.html" class="vertical-card">
+                        <div class="icon">🚗</div>
+                        <h3>Automotive</h3>
+                        <p>Vehicle browsing, test drive scheduling, and finance</p>
+                        <span class="badge">5-step flow</span>
+                    </a>
+                </div>
+            </section>
+
+            <section class="setup">
+                <h2>Quick Setup</h2>
+                <ol>
+                    <li>Select a vertical from the options above</li>
+                    <li>Walk through the complete checkout flow</li>
+                    <li>Press <code>Ctrl+D</code> to toggle the debug panel</li>
+                    <li>Check browser console for data layer output</li>
+                    <li>Verify events in Tealium EventStream or your destination</li>
+                </ol>
+                <p style="margin-top: 20px; text-align: center; color: #C4958D;">
+                    <strong>✨ Tealium is already configured and tracking!</strong>
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <p>🔧 Built for Tealium demos and testing | Open <code>config.js</code> to add your Tealium profile</p>
+        </footer>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="common.js"></script>
+</body>
+</html>

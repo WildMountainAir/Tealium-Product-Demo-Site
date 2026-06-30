@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Test Drive - AutoDrive</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="details.html" class="btn btn-secondary">← Back to Vehicle</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>📅 Schedule Test Drive</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Date & Time</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Contact Info</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Vehicle Selected</h2>
+            <div id="vehicle-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>Select Date & Time</h2>
+            <form id="testdrive-form">
+                <div class="form-group">
+                    <label>Preferred Date *</label>
+                    <input type="date" id="test_drive_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Preferred Time *</label>
+                    <select id="test_drive_time" required>
+                        <option value="09:00">9:00 AM</option>
+                        <option value="10:00">10:00 AM</option>
+                        <option value="11:00">11:00 AM</option>
+                        <option value="14:00">2:00 PM</option>
+                        <option value="15:00">3:00 PM</option>
+                        <option value="16:00">4:00 PM</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Dealership Location *</label>
+                    <select id="dealership" required>
+                        <option value="sf">San Francisco - 123 Auto Blvd</option>
+                        <option value="sj">San Jose - 456 Car Lane</option>
+                        <option value="oak">Oakland - 789 Drive Way</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="details.html" class="btn btn-secondary">← Back to Vehicle</a>
+            <button class="btn btn-primary" onclick="continueToContact()">
+                Continue to Contact Info →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let vehicle = {};
+
+        function init() {
+            vehicle = Storage.get('automotive_selected_vehicle') || {};
+
+            if (!vehicle.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('test_drive_date').min = today;
+
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            document.getElementById('test_drive_date').value = tomorrow.toISOString().split('T')[0];
+
+            document.getElementById('vehicle-info').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    ${vehicle.emoji} <strong>${vehicle.year} ${vehicle.make} ${vehicle.model}</strong><br>
+                    ${vehicle.color} • ${formatCurrency(vehicle.price)}
+                </div>
+            `;
+        }
+
+        function continueToContact() {
+            const form = document.getElementById('testdrive-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const testDriveDetails = {
+                date: document.getElementById('test_drive_date').value,
+                time: document.getElementById('test_drive_time').value,
+                dealership: document.getElementById('dealership').value
+            };
+
+            Storage.set('automotive_testdrive_details', testDriveDetails);
+
+            trackEvent('test_drive_schedule', {
+                event_category: 'automotive',
+                event_action: 'schedule_test_drive',
+                vehicle_id: vehicle.id,
+                test_drive_date: testDriveDetails.date,
+                test_drive_time: testDriveDetails.time,
+                dealership: testDriveDetails.dealership
+            });
+
+            window.location.href = 'test-drive-contact.html';
+        }
+
+        trackPageView({
+            page_name: 'Test Drive - Schedule',
+            page_type: 'lead_form',
+            site_section: 'automotive',
+            vertical: 'automotive',
+            form_step: 1
+        });
+
+        init();
+    </script>
+</body>
+</html>

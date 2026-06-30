@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Financing - AutoDrive</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="details.html" class="btn btn-secondary">← Back to Vehicle</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>💰 Get Pre-Approved</h1>
+        </header>
+
+        <div class="card">
+            <h2>Vehicle Selected</h2>
+            <div id="vehicle-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>Loan Calculator</h2>
+            <form id="calculator-form">
+                <div class="form-group">
+                    <label>Vehicle Price</label>
+                    <input type="number" id="vehicle_price" readonly>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Down Payment</label>
+                        <input type="number" id="down_payment" value="5000" min="0" step="500" onchange="calculatePayment()">
+                    </div>
+                    <div class="form-group">
+                        <label>Loan Term</label>
+                        <select id="loan_term" onchange="calculatePayment()">
+                            <option value="36">36 months</option>
+                            <option value="48">48 months</option>
+                            <option value="60" selected>60 months</option>
+                            <option value="72">72 months</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Interest Rate (APR)</label>
+                    <input type="number" id="interest_rate" value="5.9" step="0.1" min="0" max="20" onchange="calculatePayment()">
+                </div>
+            </form>
+
+            <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <h3>Estimated Monthly Payment</h3>
+                <div class="price" id="monthly-payment" style="margin: 15px 0;"></div>
+                <p style="color: #666;">
+                    Total: <span id="total-paid"></span> over <span id="term-display"></span> months
+                </p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Personal Information</h2>
+            <form id="financing-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="first_name" required value="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="last_name" required value="Smith">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" id="email" required value="john.smith@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" required value="555-123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label>Social Security Number *</label>
+                    <input type="text" id="ssn" required value="123-45-6789">
+                </div>
+
+                <div class="form-group">
+                    <label>Annual Income *</label>
+                    <input type="number" id="annual_income" required value="75000" min="0" step="1000">
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="details.html" class="btn btn-secondary">← Back to Vehicle</a>
+            <button class="btn btn-primary" onclick="submitFinancing()">
+                Submit Application →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let vehicle = {};
+
+        function init() {
+            vehicle = Storage.get('automotive_selected_vehicle') || {};
+
+            if (!vehicle.id) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('vehicle-info').innerHTML = `
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 6px;">
+                    ${vehicle.emoji} <strong>${vehicle.year} ${vehicle.make} ${vehicle.model}</strong><br>
+                    Price: ${formatCurrency(vehicle.price)}
+                </div>
+            `;
+
+            document.getElementById('vehicle_price').value = vehicle.price;
+            calculatePayment();
+        }
+
+        function calculatePayment() {
+            const price = parseFloat(document.getElementById('vehicle_price').value);
+            const downPayment = parseFloat(document.getElementById('down_payment').value);
+            const term = parseInt(document.getElementById('loan_term').value);
+            const apr = parseFloat(document.getElementById('interest_rate').value);
+
+            const loanAmount = price - downPayment;
+            const monthlyRate = apr / 100 / 12;
+            const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
+            const totalPaid = monthlyPayment * term + downPayment;
+
+            document.getElementById('monthly-payment').textContent = formatCurrency(monthlyPayment);
+            document.getElementById('total-paid').textContent = formatCurrency(totalPaid);
+            document.getElementById('term-display').textContent = term;
+        }
+
+        function submitFinancing() {
+            const form = document.getElementById('financing-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const downPayment = parseFloat(document.getElementById('down_payment').value);
+            const term = parseInt(document.getElementById('loan_term').value);
+            const apr = parseFloat(document.getElementById('interest_rate').value);
+            const loanAmount = vehicle.price - downPayment;
+            const monthlyRate = apr / 100 / 12;
+            const monthlyPayment = loanAmount * (monthlyRate * Math.pow(1 + monthlyRate, term)) / (Math.pow(1 + monthlyRate, term) - 1);
+
+            const applicationId = generateId('FIN');
+
+            trackEvent('financing_application', {
+                event_category: 'automotive',
+                event_action: 'submit_financing',
+                application_id: applicationId,
+                vehicle_id: vehicle.id,
+                vehicle_make: vehicle.make,
+                vehicle_model: vehicle.model,
+                vehicle_price: vehicle.price,
+                loan_amount: loanAmount,
+                down_payment: downPayment,
+                loan_term: term,
+                interest_rate: apr,
+                monthly_payment: monthlyPayment.toFixed(2),
+                annual_income: document.getElementById('annual_income').value,
+                customer_email: document.getElementById('email').value
+            });
+
+            alert(`✅ Pre-approval application submitted! (Ref: ${applicationId})\n\nYou'll receive a decision within 24 hours.`);
+            window.location.href = 'index.html';
+        }
+
+        trackPageView({
+            page_name: 'Financing Application',
+            page_type: 'lead_form',
+            site_section: 'automotive',
+            vertical: 'automotive'
+        });
+
+        init();
+    </script>
+</body>
+</html>

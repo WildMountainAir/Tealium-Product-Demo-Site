@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - TechStore</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" class="btn btn-secondary">← Continue Shopping</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🛒 Shopping Cart</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Cart</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Shipping</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Payment</div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Your Items</h2>
+            <div id="cart-items">
+                <!-- Cart items will be loaded here -->
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="cart-summary" id="cart-summary">
+                <!-- Summary will be loaded here -->
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn btn-secondary">← Continue Shopping</a>
+            <button class="btn btn-primary" onclick="proceedToShipping()">
+                Proceed to Shipping →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let cart = [];
+
+        // Render cart items
+        function renderCart() {
+            cart = Storage.get('retail_cart') || [];
+
+            if (cart.length === 0) {
+                document.getElementById('cart-items').innerHTML = `
+                    <p style="text-align: center; padding: 40px; color: #666;">
+                        Your cart is empty. <a href="index.html" style="color: #667eea;">Start shopping</a>
+                    </p>
+                `;
+                document.getElementById('cart-summary').innerHTML = '';
+                return;
+            }
+
+            // Render items
+            document.getElementById('cart-items').innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-image">${item.emoji}</div>
+                    <div class="cart-item-details">
+                        <h3>${item.name}</h3>
+                        <p>${item.brand} • ${item.category}</p>
+                        <p>Quantity:
+                            <button onclick="updateQuantity('${item.id}', -1)" style="padding: 5px 10px;">-</button>
+                            <strong style="margin: 0 10px;">${item.quantity}</strong>
+                            <button onclick="updateQuantity('${item.id}', 1)" style="padding: 5px 10px;">+</button>
+                            <button onclick="removeItem('${item.id}')" style="margin-left: 20px; color: red;">Remove</button>
+                        </p>
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #667eea;">
+                        ${formatCurrency(item.price * item.quantity)}
+                    </div>
+                </div>
+            `).join('');
+
+            // Render summary
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const shipping = subtotal > 100 ? 0 : 9.99;
+            const total = subtotal + tax + shipping;
+
+            document.getElementById('cart-summary').innerHTML = `
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(subtotal)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax (8%):</span>
+                    <span>${formatCurrency(tax)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span>${shipping === 0 ? 'FREE' : formatCurrency(shipping)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span>${formatCurrency(total)}</span>
+                </div>
+            `;
+        }
+
+        // Update quantity
+        function updateQuantity(productId, change) {
+            cart = Storage.get('retail_cart') || [];
+            const item = cart.find(i => i.id === productId);
+
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeItem(productId);
+                    return;
+                }
+                Storage.set('retail_cart', cart);
+                renderCart();
+            }
+        }
+
+        // Remove item
+        function removeItem(productId) {
+            cart = Storage.get('retail_cart') || [];
+            cart = cart.filter(item => item.id !== productId);
+            Storage.set('retail_cart', cart);
+            renderCart();
+
+            trackEvent('remove_from_cart', {
+                event_category: 'ecommerce',
+                event_action: 'remove_from_cart',
+                product_id: productId
+            });
+        }
+
+        // Proceed to shipping
+        function proceedToShipping() {
+            if (cart.length === 0) {
+                alert('Your cart is empty!');
+                return;
+            }
+
+            // Track cart view and begin checkout
+            const productIds = cart.map(item => item.id);
+            const productNames = cart.map(item => item.name);
+            const productCategories = cart.map(item => item.category);
+            const productBrands = cart.map(item => item.brand);
+            const productPrices = cart.map(item => item.price);
+            const productQuantities = cart.map(item => item.quantity);
+
+            trackEvent('begin_checkout', {
+                event_category: 'ecommerce',
+                event_action: 'begin_checkout',
+                checkout_step: 1,
+                product_id: productIds,
+                product_name: productNames,
+                product_category: productCategories,
+                product_brand: productBrands,
+                product_price: productPrices,
+                product_quantity: productQuantities,
+                cart_total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                currency: 'USD'
+            });
+
+            window.location.href = 'shipping.html';
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Cart',
+            page_type: 'cart',
+            site_section: 'retail',
+            vertical: 'ecommerce',
+            checkout_step: 1
+        });
+
+        // Initialize
+        renderCart();
+    </script>
+</body>
+</html>

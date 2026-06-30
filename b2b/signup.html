@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - CloudSync</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <div style="margin-bottom: 20px;">
+            <a href="index.html" class="btn btn-secondary">← Back to Pricing</a>
+        </div>
+
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>🚀 Start Your Free Trial</h1>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Account</div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-label">Company</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Selected Plan: <span id="plan-name"></span></h2>
+            <div id="plan-details" style="background: #f5f5f5; padding: 15px; border-radius: 6px; margin-bottom: 20px;"></div>
+        </div>
+
+        <div class="card">
+            <h2>Create Your Account</h2>
+            <form id="signup-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" id="first_name" required value="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" id="last_name" required value="Smith">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Work Email *</label>
+                    <input type="email" id="email" required value="john.smith@company.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone *</label>
+                    <input type="tel" id="phone" required value="555-123-4567">
+                </div>
+
+                <div class="form-group">
+                    <label>Password *</label>
+                    <input type="password" id="password" required value="password123">
+                </div>
+
+                <div class="form-group">
+                    <label>Job Title *</label>
+                    <select id="job_title" required>
+                        <option value="marketing">Marketing Manager</option>
+                        <option value="data">Data Analyst</option>
+                        <option value="engineering">Engineering Manager</option>
+                        <option value="product">Product Manager</option>
+                        <option value="executive">C-Level Executive</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <div class="btn-group">
+            <a href="index.html" class="btn btn-secondary">← Back to Pricing</a>
+            <button class="btn btn-primary" onclick="continueToCompany()">
+                Continue to Company Info →
+            </button>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let selectedPlan = {};
+
+        function displayPlan() {
+            selectedPlan = Storage.get('b2b_selected_plan') || {};
+
+            if (!selectedPlan.plan) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            document.getElementById('plan-name').textContent = selectedPlan.plan.charAt(0).toUpperCase() + selectedPlan.plan.slice(1);
+            document.getElementById('plan-details').innerHTML = `
+                <strong>Plan:</strong> ${selectedPlan.plan}<br>
+                <strong>Price:</strong> ${formatCurrency(selectedPlan.price)}/month<br>
+                <strong>Trial Period:</strong> ${selectedPlan.trial_days} days free
+            `;
+        }
+
+        function continueToCompany() {
+            const form = document.getElementById('signup-form');
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return;
+            }
+
+            const accountInfo = {
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                job_title: document.getElementById('job_title').value
+            };
+
+            Storage.set('b2b_account_info', accountInfo);
+
+            trackEvent('signup_step_1', {
+                event_category: 'b2b',
+                event_action: 'signup_progress',
+                signup_step: 1,
+                plan_name: selectedPlan.plan,
+                job_title: accountInfo.job_title
+            });
+
+            window.location.href = 'company-info.html';
+        }
+
+        trackPageView({
+            page_name: 'Sign Up - Account',
+            page_type: 'signup',
+            site_section: 'b2b',
+            vertical: 'b2b_saas',
+            signup_step: 1
+        });
+
+        displayPlan();
+    </script>
+</body>
+</html>

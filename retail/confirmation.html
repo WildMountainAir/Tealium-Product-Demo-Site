@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Confirmation - TechStore</title>
+    <link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+    <div class="page-container">
+        <header style="text-align: center; margin-bottom: 40px;">
+            <h1>✅ Order Confirmed!</h1>
+            <p>Thank you for your purchase</p>
+        </header>
+
+        <div class="step-indicator">
+            <div class="step completed">
+                <div class="step-number">1</div>
+                <div class="step-label">Cart</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">2</div>
+                <div class="step-label">Shipping</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">3</div>
+                <div class="step-label">Payment</div>
+            </div>
+            <div class="step completed">
+                <div class="step-number">4</div>
+                <div class="step-label">Confirmation</div>
+            </div>
+        </div>
+
+        <div class="alert alert-success">
+            <strong>🎉 Success!</strong> Your order has been placed successfully.
+            A confirmation email has been sent to <strong id="customer-email"></strong>.
+        </div>
+
+        <div class="card">
+            <h2>Order Details</h2>
+            <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin-bottom: 20px;">
+                <strong>Order Number:</strong> <span id="order-id"></span><br>
+                <strong>Order Date:</strong> <span id="order-date"></span><br>
+                <strong>Estimated Delivery:</strong> <span id="delivery-date"></span>
+            </div>
+
+            <h3 style="margin-bottom: 15px;">Items Ordered</h3>
+            <div id="order-items"></div>
+        </div>
+
+        <div class="card">
+            <div class="cart-summary" id="order-summary"></div>
+        </div>
+
+        <div class="card">
+            <h2>Shipping Address</h2>
+            <div id="shipping-address"></div>
+        </div>
+
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="index.html" class="btn btn-primary" onclick="resetCart()">
+                Continue Shopping
+            </a>
+        </div>
+    </div>
+
+    <script src="../config.js"></script>
+    <script src="../common.js"></script>
+    <script>
+        let cart = [];
+        let shippingInfo = {};
+        let orderId = '';
+        let shippingCosts = {
+            standard: 9.99,
+            express: 19.99,
+            overnight: 39.99
+        };
+
+        function displayConfirmation() {
+            cart = Storage.get('retail_cart') || [];
+            shippingInfo = Storage.get('retail_shipping') || {};
+            orderId = Storage.get('retail_order_id') || generateId('ORDER');
+
+            if (cart.length === 0) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Display order ID and dates
+            document.getElementById('order-id').textContent = orderId;
+            document.getElementById('customer-email').textContent = shippingInfo.email || 'your email';
+
+            const orderDate = new Date();
+            document.getElementById('order-date').textContent = orderDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            // Calculate delivery date based on shipping method
+            const deliveryDays = {
+                standard: 7,
+                express: 3,
+                overnight: 1
+            };
+            const deliveryDate = new Date();
+            deliveryDate.setDate(deliveryDate.getDate() + deliveryDays[shippingInfo.shipping_method || 'standard']);
+            document.getElementById('delivery-date').textContent = deliveryDate.toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            // Display items
+            document.getElementById('order-items').innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-image">${item.emoji}</div>
+                    <div class="cart-item-details">
+                        <h3>${item.name}</h3>
+                        <p>${item.brand} • ${item.category}</p>
+                        <p>Quantity: ${item.quantity}</p>
+                    </div>
+                    <div style="font-size: 1.2rem; font-weight: bold; color: #667eea;">
+                        ${formatCurrency(item.price * item.quantity)}
+                    </div>
+                </div>
+            `).join('');
+
+            // Display summary
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const shipping = subtotal > 100 && shippingInfo.shipping_method === 'standard' ?
+                0 : shippingCosts[shippingInfo.shipping_method || 'standard'];
+            const total = subtotal + tax + shipping;
+
+            document.getElementById('order-summary').innerHTML = `
+                <h3 style="margin-bottom: 15px;">Order Total</h3>
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span>${formatCurrency(subtotal)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Tax:</span>
+                    <span>${formatCurrency(tax)}</span>
+                </div>
+                <div class="summary-row">
+                    <span>Shipping:</span>
+                    <span>${shipping === 0 ? 'FREE' : formatCurrency(shipping)}</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total Paid:</span>
+                    <span>${formatCurrency(total)}</span>
+                </div>
+            `;
+
+            // Display shipping address
+            document.getElementById('shipping-address').innerHTML = `
+                <p>
+                    ${shippingInfo.first_name} ${shippingInfo.last_name}<br>
+                    ${shippingInfo.address1}<br>
+                    ${shippingInfo.address2 ? shippingInfo.address2 + '<br>' : ''}
+                    ${shippingInfo.city}, ${shippingInfo.state} ${shippingInfo.zip}<br>
+                    ${shippingInfo.country}
+                </p>
+            `;
+        }
+
+        function resetCart() {
+            // Clear cart and order data
+            Storage.remove('retail_cart');
+            Storage.remove('retail_shipping');
+            Storage.remove('retail_payment');
+            Storage.remove('retail_order_id');
+        }
+
+        // Track page view
+        trackPageView({
+            page_name: 'Order Confirmation',
+            page_type: 'confirmation',
+            site_section: 'retail',
+            vertical: 'ecommerce',
+            checkout_step: 4,
+            order_id: Storage.get('retail_order_id')
+        });
+
+        // Initialize
+        displayConfirmation();
+    </script>
+</body>
+</html>
